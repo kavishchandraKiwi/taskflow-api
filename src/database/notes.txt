@@ -1,0 +1,12 @@
+INSERT into users(
+    email, 
+    user_name,
+    time_created,
+    password
+)
+VALUES (
+    'kavishkiwi@gmail.com',
+    'kavish',
+    NOW(),
+    'password'
+)
