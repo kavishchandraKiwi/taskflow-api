@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from 'src/users/users.service';
+import { LoginDto } from './dto/login.dto';
 
 
 @Injectable()
@@ -13,8 +14,10 @@ export class AuthService{
     ){}
 
     async login(email: string, password: string) {
-        const user = await this.usersService.checkExistingEmails(email); 
-        if(!user) { return ('error: User doesnt exist'); }
+        const user = await this.usersService.checkExistingEmails(email);
+        if (!user) {
+            return 'error: User doesnt exist';
+        }
 
         const passwordCheck = bcrypt.compareSync(password, user.password);
         if(!passwordCheck) { 
@@ -28,5 +31,9 @@ export class AuthService{
         );
 
         return { token };
+    }
+
+    async loginWithDto(credentials: LoginDto) {
+        return this.login(credentials.email, credentials.password);
     }
 }
