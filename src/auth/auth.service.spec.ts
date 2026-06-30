@@ -63,7 +63,7 @@ describe('AuthService', () => {
   describe('login', () => {
     
     it('should return token upon succesful login', async () => {
-      const mockUser = { user_id: 1, email: 'test@gmail.com', password: 'hashed' };
+      const mockUser = { user_id: 1, email: 'test@gmail.com', password: 'test' };
       usersService.checkExistingEmails.mockResolvedValue(mockUser);
       const credentials: LoginDto = { email: 'test@gmail.com', password: 'test' };
       const result = await service.login(credentials);
@@ -72,16 +72,16 @@ describe('AuthService', () => {
 
     it('should return error if user does not exist', async () => {
       usersService.checkExistingEmails.mockResolvedValue(null);
-      const credentials: LoginDto = { email: 'nonexistent@gmail.com', password: 'test' };
+      const credentials: LoginDto = { email: 'nonexistent@gmail.com', password: 'doesitevenmatter??' };
       const result = await service.login(credentials);
       expect(result).toEqual('error: User doesnt exist');
     });
 
     it('should return error if password is incorrect', async () => {
-      const mockUser = { user_id: 1, email: 'test@gmail.com', password: 'hashed' };
+      const mockUser = { user_id: 1, email: 'test@gmail.com', password: 'iknowthispasswordiswrong' };
       usersService.checkExistingEmails.mockResolvedValue(mockUser);
       (bcrypt.compareSync as unknown as jest.Mock).mockReturnValue(false);
-      const credentials: LoginDto = { email: 'test@gmail.com', password: 'wrong password' };
+      const credentials: LoginDto = { email: 'test@gmail.com', password: 'iknowthispasswordiswrong' };
       const result = await service.login(credentials);
       expect(result).toEqual({ error: 'Incorrect password' });
     });
