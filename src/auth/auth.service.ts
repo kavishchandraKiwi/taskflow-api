@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 
 
@@ -13,13 +13,13 @@ export class AuthService{
         private configService: ConfigService,
     ){}
 
-    async login(email: string, password: string) {
-        const user = await this.usersService.checkExistingEmails(email);
+    async login(credentials: LoginDto) {
+        const user = await this.usersService.checkExistingEmails(credentials.email);
         if (!user) {
             return 'error: User doesnt exist';
         }
 
-        const passwordCheck = bcrypt.compareSync(password, user.password);
+        const passwordCheck = bcrypt.compareSync(credentials.password, user.password);
         if(!passwordCheck) { 
             return { error: 'Incorrect password' };
         }
@@ -33,7 +33,5 @@ export class AuthService{
         return { token };
     }
 
-    async loginWithDto(credentials: LoginDto) {
-        return this.login(credentials.email, credentials.password);
-    }
+    
 }
