@@ -14,10 +14,12 @@ export class AuthService{
 
     async login(email: string, password: string) {
         const user = await this.usersService.checkExistingEmails(email); 
-        if(!user) { throw new Error('User doesnt exist'); }
+        if(!user) { return ('error: User doesnt exist'); }
 
         const passwordCheck = bcrypt.compareSync(password, user.password);
-        if(!passwordCheck) { throw new Error('Incorrect password'); }
+        if(!passwordCheck) { 
+            return { error: 'Incorrect password' };
+        }
 
         const token = jwt.sign(
             { user_id: user.user_id, email: user.email },

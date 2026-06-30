@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { pool } from '../database/database'
+import { DatabaseService } from '../database/database';
 
 @Injectable()
 export class UsersService {
+    constructor(private databaseService: DatabaseService) {}
+
     async getUsers(){
-        const res = await pool.query("SELECT * FROM users");
+        const res = await this.databaseService.getPool().query("SELECT * FROM users");
         return res;
     }
     
     async createUser(email: string,username: string,password_hashed:string){
-        const result = await pool.query(
+        const result = await this.databaseService.getPool().query(
         `
         INSERT INTO users (
             email,
@@ -25,7 +27,7 @@ export class UsersService {
         return result.rows[0];
     }
     async checkExistingEmails(email:string){
-        const result = await pool.query('SELECT * FROM users WHERE email=$1',[email]);
+        const result = await this.databaseService.getPool().query('SELECT * FROM users WHERE email=$1',[email]);
         if(result.rows.length === 0){
             return null;
         }
