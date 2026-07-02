@@ -5,8 +5,10 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { ProjectsModule } from './projects/projects.module';
 import { TasksModule } from './tasks/tasks.module';
+import { ProjectsModule } from './projects/projects.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './auth/auth.guard';
 
 @Module({
   imports: [
@@ -18,10 +20,15 @@ import { TasksModule } from './tasks/tasks.module';
     DatabaseModule,
     UsersModule,
     AuthModule,
-    ProjectsModule,
     TasksModule,
+    ProjectsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+  {
+    provide: APP_GUARD,
+    useClass: AuthGuard,
+  }
+]
 })
 export class AppModule {}

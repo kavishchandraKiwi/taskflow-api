@@ -1,14 +1,30 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { CreateProjectDto } from './dto/create-project.dto';
+import { Controller,Request, Body, Post, Get, Patch, UnauthorizedException } from '@nestjs/common';
+import { ProjectsService } from './projects.service';
+import { createProjectDto } from './dto/createProject';
+import {Request as ExpressRequest} from 'express';
+
 
 
 @Controller('projects')
 export class ProjectsController {
-  @Post()
-  create(@Body() createProjectDto: CreateProjectDto) {
-    return {
-      message: 'Project created',
-      payload: createProjectDto,
-    };
-  }
+    constructor(private readonly projectsService: ProjectsService){}
+
+    @Post('createproject')
+    async createProject(@Body() newProjectDto: createProjectDto,
+        @Request() req: ExpressRequest & {user?:{ user_id: number; email: string } },
+    ){
+        if(!req.user?.user_id){
+            throw new UnauthorizedException('user not authenticated')
+        }
+
+        return this.projectsService.createProject(newProjectDto, req.user);
+    }
+
+    @Post('seemyprojects')
+    async listUserProjects( @Request() req: ExpressRequest & {user?:{ user_id: number; email: string }}){
+        if(!req.user?.user_id){
+            throw new UnauthorizedException('user not authenticated')
+        }
+        return this.projectsService.listUserProjects(req.user);
+    }
 }

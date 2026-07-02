@@ -11,6 +11,7 @@ export class AuthService{
     constructor(
         private usersService: UsersService,
         private configService: ConfigService,
+
     ){}
 
     async login(credentials: LoginDto) {
@@ -29,9 +30,6 @@ export class AuthService{
             this.configService.get<string>('JWT_SECRET'),
             { expiresIn: this.configService.get<string>('JWT_EXPIRES_IN') ?? '1h' },
         );
-        const result = {
-            'token':token
-        };
         return { token };
     }
 

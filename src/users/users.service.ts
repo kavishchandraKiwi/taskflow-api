@@ -12,6 +12,8 @@ export class UsersService {
     }
     
     async createUser(email: string,username: string,password_hashed:string){
+        const checkIfEmailExists = await this.checkExistingEmails(email);
+        if(checkIfEmailExists!=null) return {"message": "email already exists bro"};
         const result = await this.databaseService.getPool().query(
         `
         INSERT INTO users (
@@ -20,7 +22,7 @@ export class UsersService {
             time_created,
             password
         ) VALUES ($1, $2, NOW(), $3)
-        RETURNING user_id,email, user_name, time_created
+        RETURNING user_id, email, user_name, time_created
         `,
         [email, username, password_hashed]
     );
