@@ -1,7 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Body, ConflictException, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database';
 import { createProjectDto } from './dto/createProject';
 import { ConfigService } from '@nestjs/config';
+import { UpdateProjectdto } from './dto/updateProjectDto';
 
 @Injectable()
 export class ProjectsService {
@@ -29,7 +30,7 @@ export class ProjectsService {
             `, [user.user_id, project_name],
         );
         if (check.rowCount > 0) {
-            throw new ConflictException('you already own a project by the same name');
+            throw new ConflictException('you already own a project by the same name bro');
         }
         const  projres = await this.databaseService.getPool().query(
             `
@@ -58,6 +59,41 @@ export class ProjectsService {
             `,[user.user_id]
         );
         return res.rows;
+    }
+
+    async updateProject(updateProjectDto: UpdateProjectdto, user:{user_id}){
+        const res = await this.databaseService.getPool().query(
+            `
+            UPDATE projects
+            SET description = $1
+            WHERE owner_user_id = $2
+            
+
+            `,[updateProjectDto.updated_description, user.user_id]
+        );
+
+        return {"message": "project updated"};
+    }
+
+    async deleteProject(user:{user_id}, project_name: string){
+        const exists = await this.databaseService.getPool().query(
+            `
+            SELECT EXISTS(
+                SELECT 1
+                FROM projects
+                WHERE project_name = $1 
+                        AND owner_user_id = $2)
+            `, [project_name, user.user_id]
+        )
+        if(exists) return {"message": "bro you dont have a project with that name"};
+        else{
+            const res = await this.databaseService.getPool().query(
+                `
+                DELETE FROM projects WHERE owner_user_id = $1 AND project_name = $2
+                `,[user.user_id, project_name]
+            )
+            return {"message": "project deleted"};
+    }
     }
 
 }

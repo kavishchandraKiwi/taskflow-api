@@ -1,7 +1,8 @@
-import { Controller,Request, Body, Post, Get, Patch, UnauthorizedException } from '@nestjs/common';
+import { Controller,Request, Body, Post, Get, Patch, UnauthorizedException, Delete } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { createProjectDto } from './dto/createProject';
 import {Request as ExpressRequest} from 'express';
+import { UpdateProjectdto } from './dto/updateProjectDto';
 
 
 
@@ -26,5 +27,24 @@ export class ProjectsController {
             throw new UnauthorizedException('user not authenticated')
         }
         return this.projectsService.listUserProjects(req.user);
+    }
+
+    @Patch('updatemyproject')
+    async updateProject(@Body() updateProjectDto: UpdateProjectdto, 
+    @Request() req: ExpressRequest & {user?:{ user_id: number; email: string }}){
+        if(!req.user?.user_id){
+            throw new UnauthorizedException('user not authenticated')
+        }
+        return this.projectsService.updateProject(updateProjectDto,req.user);
+
+    }
+
+    @Delete('deleteprojectwithname')
+    async deleteProject(@Body() project_name: string, 
+    @Request() req: ExpressRequest & {user?:{ user_id: number; email: string }}){
+        if(!req.user?.user_id){
+            throw new UnauthorizedException('user not authenticated')
+        }
+        return this.projectsService.deleteProject(req.user, project_name);
     }
 }
