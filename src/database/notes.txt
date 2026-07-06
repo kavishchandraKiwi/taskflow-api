@@ -1,6 +1,6 @@
 INSERT into users(
     email, 
-    user_name,
+    username,
     time_created,
     password
 )

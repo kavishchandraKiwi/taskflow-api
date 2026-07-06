@@ -18,11 +18,11 @@ export class UsersService {
         `
         INSERT INTO users (
             email,
-            user_name,
+            username,
             time_created,
             password
         ) VALUES ($1, $2, NOW(), $3)
-        RETURNING user_id, email, user_name, time_created
+        RETURNING user_id, email, username, time_created
         `,
         [email, username, password_hashed]
     );
