@@ -22,7 +22,7 @@ export class AuthService{
 
         const passwordCheck = bcrypt.compareSync(credentials.password, user.password);
         if(!passwordCheck) { 
-            return { error: 'Incorrect password' };
+            throw new UnauthorizedException("incorrect password");
         }
 
         const token = jwt.sign(
