@@ -17,7 +17,6 @@ export class AuthGuard implements CanActivate {
     const authHeader = request.headers.authorization;
     const isAuthRoute = request.originalUrl.startsWith('/users');
 
-    console.log(authHeader);
     if (isAuthRoute) {
       return true;
     }
@@ -34,7 +33,7 @@ export class AuthGuard implements CanActivate {
 
     try {
       const secret = this.configService.get<string>('JWT_SECRET');
-      const payload = jwt.verify(token, secret ?? 'default-secret');
+      const payload = jwt.verify(token, secret);
       request.user = payload;
       return true;
     } catch {
