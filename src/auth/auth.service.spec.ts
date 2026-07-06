@@ -67,7 +67,9 @@ describe('AuthService', () => {
       usersService.checkExistingEmails.mockResolvedValue(mockUser);
       const credentials: LoginDto = { email: 'test@gmail.com', password: 'test' };
       const result = await service.login(credentials);
-      expect(result).toHaveProperty('token');
+      expect(result).toEqual({
+        token:"signed-token"
+      });
     });
 
     it('should return error if user does not exist', async () => {

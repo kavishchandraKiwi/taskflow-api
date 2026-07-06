@@ -1,5 +1,5 @@
 
 export class createProjectDto {
-    project_name: string;
-    project_description: string
+    project_name?: string;
+    project_description?: string
 }

@@ -1,8 +1,8 @@
 import { Body, ConflictException, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database';
-import { createProjectDto } from './dto/createProject';
+import { CreateProjectDto } from './dto/create-project.dto';
 import { ConfigService } from '@nestjs/config';
-import { UpdateProjectdto } from './dto/updateProjectDto';
+import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -20,9 +20,9 @@ export class ProjectsService {
         return res;
     }
     
-    async createProject(newProjectDto: createProjectDto, user: { user_id: number }) {
+    async createProject(createProjectDto: CreateProjectDto, user: { user_id: number }) {
         //check if user already has project with same name
-        const { project_name, project_description } = newProjectDto;
+        const { project_name, project_description } = createProjectDto;
         const check = await this.databaseService.getPool().query(
             `
                 SELECT project_id FROM projects
@@ -61,7 +61,7 @@ export class ProjectsService {
         return res.rows;
     }
 
-    async updateProject(updateProjectDto: UpdateProjectdto, user:{user_id}){
+    async updateProject(updateProjectDto: UpdateProjectDto, user:{user_id}){
         const res = await this.databaseService.getPool().query(
             `
             UPDATE projects
@@ -75,7 +75,7 @@ export class ProjectsService {
         return {"message": "project updated"};
     }
 
-    async deleteProject(user:{user_id}, project_name: string){
+    async deleteProject(user:{user_id}, id: string){
         const exists = await this.databaseService.getPool().query(
             `
             SELECT EXISTS(
@@ -83,14 +83,14 @@ export class ProjectsService {
                 FROM projects
                 WHERE project_name = $1 
                         AND owner_user_id = $2)
-            `, [project_name, user.user_id]
+            `, [id, user.user_id]
         )
         if(exists) return {"message": "bro you dont have a project with that name"};
         else{
             const res = await this.databaseService.getPool().query(
                 `
                 DELETE FROM projects WHERE owner_user_id = $1 AND project_name = $2
-                `,[user.user_id, project_name]
+                `,[user.user_id, id]
             )
             return {"message": "project deleted"};
     }
