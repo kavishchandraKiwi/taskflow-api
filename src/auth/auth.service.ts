@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
@@ -17,7 +17,7 @@ export class AuthService{
     async login(credentials: LoginDto) {
         const user = await this.usersService.checkExistingEmails(credentials.email);
         if (!user) {
-            return 'error: User doesnt exist';
+            throw new UnauthorizedException("Invalid credentials");
         }
 
         const passwordCheck = bcrypt.compareSync(credentials.password, user.password);

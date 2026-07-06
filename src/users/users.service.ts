@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database';
 
 
@@ -13,7 +13,7 @@ export class UsersService {
     
     async createUser(email: string,username: string,password_hashed:string){
         const checkIfEmailExists = await this.checkExistingEmails(email);
-        if(checkIfEmailExists!=null) return {"message": "email already exists bro"};
+        if(checkIfEmailExists!=null) throw new ConflictException('account already exists with this email');
         const result = await this.databaseService.getPool().query(
         `
         INSERT INTO users (
