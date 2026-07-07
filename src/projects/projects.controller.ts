@@ -47,4 +47,22 @@ export class ProjectsController {
         }
         return this.projectsService.deleteProject(req.user, id);
     }
+
+    @Post (':id/members')
+    async addMemberToProject(@Param('id') id: string, @Body() body: {email: string}, 
+    @Request() req: ExpressRequest & {user?:{ user_id: number; email: string }}){
+        if(!req.user?.user_id){
+            throw new UnauthorizedException('user not authenticated')
+        }
+        return this.projectsService.addMemberToProject(id, body.email, req.user);
+    }
+
+    @Get(':id/members')
+    async listProjectMembers(@Param('id') id: string, 
+    @Request() req: ExpressRequest & {user?:{ user_id: number; email: string }}){
+        if(!req.user?.user_id){
+            throw new UnauthorizedException('user not authenticated')
+        }
+        return this.projectsService.listProjectMembers(id, req.user);
+    }
 }

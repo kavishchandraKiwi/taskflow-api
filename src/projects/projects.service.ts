@@ -46,8 +46,8 @@ export class ProjectsService {
         }
         const  projres = await this.databaseService.getPool().query(
             `
-                INSERT INTO projects (project_name, description, owner_user_id)
-                VALUES($1, $2, $3)
+                INSERT INTO projects (project_name, description, owner_user_id, deadline)
+                VALUES($1, $2, $3, $4)
                 RETURNING *`
             , [project_name, project_description, user.user_id]
         );
@@ -113,8 +113,47 @@ export class ProjectsService {
                 `,[user.user_id, id]
             )
             return {"message": "project deleted"};
+        }
+
+
     }
+
+    async addMemberToProject(id: string, email: string, user:{user_id}){
+        const check = await this.databaseService.getPool().query(
+            `
+            SELECT EXISTS(
+                SELECT 1
+                FROM projects_members pm
+                JOIN users u ON pm.user_id = u.user_id
+                WHERE pm.project_id = $1 AND u.email = $2
+            )
+            `, [id, email]
+        );
+        if(check.rows[0].exists){
+            throw new ConflictException('user is already a member of the project');
+        }
+        const res = await this.databaseService.getPool().query(
+            `
+            INSERT INTO projects_members(project_id, user_id)
+            SELECT $1, user_id FROM users WHERE email = $2
+            RETURNING *
+            `,[id, email]
+        );
+        return res.rows[0];
     }
+
+    async listProjectMembers(id: string, user:{user_id}){
+        const res = await this.databaseService.getPool().query(
+            `
+            SELECT u.user_id, u.email
+            FROM users u
+            JOIN projects_members pm ON u.user_id = pm.user_id
+            WHERE pm.project_id = $1
+            `,[id]
+        );
+        return res.rows;
+    }   
+
 
 }
 

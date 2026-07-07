@@ -66,7 +66,6 @@ describe('AuthService', () => {
       });
 
       (bcrypt.compareSync as jest.Mock).mockReturnValue(true);
-
       (jwt.sign as jest.Mock).mockReturnValue('mock-jwt-token');
 
       const result = await authService.login({
