@@ -10,6 +10,18 @@ export class ProjectsService {
         private databaseService: DatabaseService,
         private configService: ConfigService
     ) { }
+    async checkIfProjectExists(project_name: string, user_id: number) {
+        const res = await this.databaseService.getPool().query(
+            `
+            SELECT EXISTS(
+                SELECT 1
+                FROM projects
+                WHERE project_name = $1 AND owner_user_id = $2
+            )
+            `, [project_name, user_id]
+        );
+        return res.rows[0].exists;
+    }
 
     async getProjects() {
         const res = await this.databaseService.getPool().query(
@@ -54,22 +66,30 @@ export class ProjectsService {
     async listUserProjects(user: {user_id:number}){
         const res = await this.databaseService.getPool().query(
             `
-                SELECT * FROM projects WHERE owner_user_id = $1
+                SELECT p.*
+                FROM projects p
+                JOIN projects_members pm
+                ON p.project_id = pm.project_id
+                WHERE pm.user_id = $1;
 
             `,[user.user_id]
         );
         return res.rows;
     }
 
-    async updateProject(updateProjectDto: UpdateProjectDto, user:{user_id}){
+    async updateProject(updateProjectDto: UpdateProjectDto, user:{user_id}, id:string){
+        const check = await this.checkIfProjectExists(updateProjectDto.project_name, user.user_id);
+        if(check){
+            throw new ConflictException('you already own a project by the same name bro');
+        }
         const res = await this.databaseService.getPool().query(
             `
             UPDATE projects
             SET description = $1
-            WHERE owner_user_id = $2
+            WHERE owner_user_id = $2 AND project_id = $3
             
 
-            `,[updateProjectDto.updated_description, user.user_id]
+            `,[updateProjectDto.updated_description, user.user_id, id]
         );
 
         return {"message": "project updated"};
@@ -85,11 +105,11 @@ export class ProjectsService {
                         AND owner_user_id = $2)
             `, [id, user.user_id]
         )
-        if(exists) return {"message": "bro you dont have a project with that name"};
+        if(exists.rows[0].exists) return {"message": "bro you dont have a project with that name"};
         else{
             const res = await this.databaseService.getPool().query(
                 `
-                DELETE FROM projects WHERE owner_user_id = $1 AND project_name = $2
+                DELETE FROM projects WHERE owner_user_id = $1 AND project_id = $2
                 `,[user.user_id, id]
             )
             return {"message": "project deleted"};

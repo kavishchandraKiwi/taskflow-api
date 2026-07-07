@@ -19,7 +19,9 @@ export class AuthGuard implements CanActivate {
       {method: 'POST', path : 'users/register'},
       {method: 'POST', path: 'users/login'}
     ];
-    const isAuthRoute = request.originalUrl.startsWith('/users');
+    const isAuthRoute =  [
+      '/users/register','/users/login','/auth/*'
+    ].some(p => request.originalUrl.startsWith(p));
 
     if (isAuthRoute) {
       return true;

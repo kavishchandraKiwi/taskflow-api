@@ -35,7 +35,7 @@ export class ProjectsController {
         if(!req.user?.user_id){
             throw new UnauthorizedException('user not authenticated')
         }
-        return this.projectsService.updateProject(updateProjectDto,req.user);
+        return this.projectsService.updateProject(updateProjectDto,req.user, id);
 
     }
 
