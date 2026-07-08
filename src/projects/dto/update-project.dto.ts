@@ -1,5 +1,6 @@
 export class UpdateProjectDto {
-    project_name: string;
-    updated_description: string;
-    
+  project_name?: string;
+  description?: string;
+  updated_description?: string;
+  deadline?: string;
 }
