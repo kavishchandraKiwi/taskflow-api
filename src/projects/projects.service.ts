@@ -30,7 +30,7 @@ export class ProjectsService {
       `
         INSERT INTO projects (project_name, description, deadline, owner_user_id)
         VALUES ($1, $2, $3, $4)
-        RETURNING project_id, project_name, description, deadline, owner_user_id, time_created
+        RETURNING project_id, project_name, description, deadline, owner_user_id
       `,
       [projectName, description, deadline, user.user_id],
     );
@@ -48,11 +48,11 @@ export class ProjectsService {
   async listUserProjects(user: { user_id: number }) {
     const res = await this.databaseService.getPool().query(
       `
-        SELECT DISTINCT p.project_id, p.project_name, p.description, p.deadline, p.owner_user_id, p.time_created
+        SELECT DISTINCT p.project_id, p.project_name, p.description, p.deadline, p.owner_user_id
         FROM projects p
         JOIN projects_members pm ON pm.project_id = p.project_id
         WHERE pm.user_id = $1
-        ORDER BY p.time_created DESC
+        
       `,
       [user.user_id],
     );
@@ -71,7 +71,7 @@ export class ProjectsService {
     }
 
     const res = await this.databaseService.getPool().query(
-      `SELECT project_id, project_name, description, deadline, owner_user_id, time_created FROM projects WHERE project_id = $1`,
+      `SELECT project_id, project_name, description, deadline, owner_user_id FROM projects WHERE project_id = $1`,
       [projectId],
     );
 
@@ -126,7 +126,7 @@ export class ProjectsService {
     values.push(projectId);
 
     const res = await this.databaseService.getPool().query(
-      `UPDATE projects SET ${fields.join(', ')} WHERE project_id = $${index} RETURNING project_id, project_name, description, deadline, owner_user_id, time_created`,
+      `UPDATE projects SET ${fields.join(', ')} WHERE project_id = $${index} RETURNING project_id, project_name, description, deadline, owner_user_id`,
       values,
     );
 
@@ -163,7 +163,7 @@ export class ProjectsService {
     }
 
     if (project.rows[0].owner_user_id !== user.user_id) {
-      throw new ForbiddenException('Only the project owner can add members');
+      throw new ForbiddenException('bro youre not the project owner, you cant add members');
     }
 
     const targetUser = await this.databaseService.getPool().query(
