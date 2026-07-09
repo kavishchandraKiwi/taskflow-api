@@ -26,8 +26,7 @@ export class ProjectsController {
   }
 
   @Post()
-  async createProject(
-    @Body() createProjectDto: CreateProjectDto,
+  async createProject(@Body() createProjectDto: CreateProjectDto,
     @Request() req: ExpressRequest & { user?: { user_id: number; email: string } },
   ) {
     const user = this.getAuthenticatedUser(req);
@@ -41,8 +40,7 @@ export class ProjectsController {
   }
 
   @Get(':id')
-  async getProject(
-    @Param('id') id: string,
+  async getProject(@Param('id') id: string,
     @Request() req: ExpressRequest & { user?: { user_id: number; email: string } },
   ) {
     const user = this.getAuthenticatedUser(req);
@@ -50,9 +48,7 @@ export class ProjectsController {
   }
 
   @Patch(':id')
-  async updateProject(
-    @Param('id') id: string,
-    @Body() updateProjectDto: UpdateProjectDto,
+  async updateProject(@Param('id') id: string,@Body() updateProjectDto: UpdateProjectDto,
     @Request() req: ExpressRequest & { user?: { user_id: number; email: string } },
   ) {
     const user = this.getAuthenticatedUser(req);
@@ -69,9 +65,7 @@ export class ProjectsController {
   }
 
   @Post(':id/members')
-  async addMemberToProject(
-    @Param('id') id: string,
-    @Body() body: { email: string },
+  async addMemberToProject(@Param('id') id: string,@Body() body: { email: string },
     @Request() req: ExpressRequest & { user?: { user_id: number; email: string } },
   ) {
     const user = this.getAuthenticatedUser(req);
@@ -79,8 +73,7 @@ export class ProjectsController {
   }
 
   @Get(':id/members')
-  async listProjectMembers(
-    @Param('id') id: string,
+  async listProjectMembers(@Param('id') id: string,
     @Request() req: ExpressRequest & { user?: { user_id: number; email: string } },
   ) {
     const user = this.getAuthenticatedUser(req);
