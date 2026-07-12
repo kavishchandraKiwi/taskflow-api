@@ -34,11 +34,11 @@ describe('UsersService', () => {
   })
   describe('checkExistingEmails', () => {
     it('should return user data if email exists in the database',async() => {
-      const mockUserData = { user_id: 1, email: 'existinguser@test.com', username: 'existinguser'};
+      const mockUserData = { user_id: 1, email: 'existinguser@test.com', username: 'existinguser', password: 'hashed_password' };
       jest.spyOn(databaseService.getPool(), 'query').mockResolvedValue({ rows: [mockUserData] });
       
       const result = usersService.checkExistingEmails(mockUserData.email);
-      expect(databaseService.getPool().query).toHaveBeenCalledWith('SELECT user_id, email, username FROM users WHERE email=$1', ['existinguser@test.com']);
+      expect(databaseService.getPool().query).toHaveBeenCalledWith('SELECT user_id, email, username, password FROM users WHERE email=$1', ['existinguser@test.com']);
       
       expect(result).resolves.toEqual(mockUserData);
     });
@@ -49,7 +49,7 @@ describe('UsersService', () => {
       jest.spyOn(databaseService.getPool(), 'query').mockResolvedValue({rows: []});
 
       const result = usersService.checkExistingEmails(mockUserData.email);
-      expect(databaseService.getPool().query).toHaveBeenCalledWith('SELECT user_id, email, username FROM users WHERE email=$1', ['existinguser@test.com']);
+      expect(databaseService.getPool().query).toHaveBeenCalledWith('SELECT user_id, email, username, password FROM users WHERE email=$1', ['existinguser@test.com']);
       expect(result).resolves.toEqual(null);
       
     });
@@ -83,7 +83,7 @@ describe('UsersService', () => {
     });
     it('should throw a conflict exception if user input email already exists in the database', async() => {
       const mockUserData : RegisterUserDto = {email: 'existinguser@test.com', username: 'existinguser', password: 'hashed_password'};
-      jest.spyOn(usersService, 'checkExistingEmails').mockResolvedValue({ user_id: 1, email: 'existinguser@test.com', username: 'existinguser' });
+      jest.spyOn(usersService, 'checkExistingEmails').mockResolvedValue({ user_id: 1, email: 'existinguser@test.com', username: 'existinguser', password: 'hashed_password' });
 
       if(await usersService.checkExistingEmails(mockUserData.email)){
         await expect(usersService.createUser(mockUserData)).rejects.toThrowError('account already exists with this email');

@@ -28,7 +28,7 @@ export class UsersService {
         return result.rows[0];
     }
     async checkExistingEmails(email:string){
-        const result = await this.databaseService.getPool().query('SELECT user_id, email, username FROM users WHERE email=$1',[email]);
+        const result = await this.databaseService.getPool().query('SELECT user_id, email, username, password FROM users WHERE email=$1',[email]);
         if(result.rows.length === 0){
             return null;
         }
