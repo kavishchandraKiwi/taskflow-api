@@ -1,18 +1,16 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database';
+import { RegisterUserDto } from './dto/register-user.dto';
 
 
 @Injectable()
 export class UsersService {
     constructor(private databaseService: DatabaseService) {}
 
-    async getUsers(){
-        const res = await this.databaseService.getPool().query("SELECT * FROM users");
-        return res;
-    }
     
-    async createUser(email: string,username: string,password_hashed:string){
-        const checkIfEmailExists = await this.checkExistingEmails(email);
+    
+    async createUser(newUserData: RegisterUserDto){
+        const checkIfEmailExists = await this.checkExistingEmails(newUserData.email);
         if(checkIfEmailExists!=null) throw new ConflictException('account already exists with this email');
         const result = await this.databaseService.getPool().query(
         `
@@ -24,13 +22,13 @@ export class UsersService {
         ) VALUES ($1, $2, NOW(), $3)
         RETURNING user_id, email, username, time_created
         `,
-        [email, username, password_hashed]
+        [newUserData.email, newUserData.username, newUserData.password]
     );
             
         return result.rows[0];
     }
     async checkExistingEmails(email:string){
-        const result = await this.databaseService.getPool().query('SELECT * FROM users WHERE email=$1',[email]);
+        const result = await this.databaseService.getPool().query('SELECT user_id, email, username FROM users WHERE email=$1',[email]);
         if(result.rows.length === 0){
             return null;
         }
