@@ -74,12 +74,12 @@ export class TasksService {
         const result = await this.databaseService.getPool().query(
         `
         INSERT INTO tasks (project_id, title, description, priority, status,
-            due_date, assigned_to_user_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+            due_date, assigned_to_user_id, assigned_by_user_id
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING *
         `,
         [
-            projectId, createTaskDto.title, createTaskDto.description || null, createTaskDto.priority, createTaskDto.status || 'todo', createTaskDto.due_date || null, createTaskDto.assigned_to_user_id || null
+            projectId, createTaskDto.title, createTaskDto.description || null, createTaskDto.priority, createTaskDto.status || 'todo', createTaskDto.due_date || null, createTaskDto.assigned_to_user_id || null, user.user_id
         ]
         );
         return result.rows[0];
@@ -128,16 +128,7 @@ export class TasksService {
         return result.rows[0];
     }
 
-    async updateTask(projectId: number,
-    taskId: number,
-    updateTaskDto: {
-      title?: string;
-      description?: string;
-      priority?: string;
-      status?: string;
-      due_date?: string | Date;
-      assigned_to_user_id?: number | null;
-    },
+    async updateTask(projectId: number, taskId: number, updateTaskDto: UpdateTaskDto,
     user: { user_id: number }){
         await this.checkProjectMembership(projectId,user);
         const existing = await this.databaseService.getPool().query(
@@ -147,8 +138,59 @@ export class TasksService {
         if(existing.rowCount == 0) throw new NotFoundException('task not found');
 
         const fields: string[] = [];
-        const values: string[] = [];
+        const values: unknown[] = [];
         let index = 1; 
+        if (updateTaskDto.title !== undefined) {
+        fields.push(`title = $${index++}`);
+        values.push(updateTaskDto.title);
+        }
+
+        if (updateTaskDto.description !== undefined) {
+        fields.push(`description = $${index++}`);
+        values.push(updateTaskDto.description);
+        }
+
+        if (updateTaskDto.priority !== undefined) {
+        fields.push(`priority = $${index++}`);
+        values.push(updateTaskDto.priority);
+        }
+
+        if (updateTaskDto.status !== undefined) {
+        fields.push(`status = $${index++}`);
+        values.push(updateTaskDto.status);
+        }
+
+        if (updateTaskDto.due_date !== undefined) {
+        fields.push(`due_date = $${index++}`);
+        values.push(updateTaskDto.due_date);
+        }
+
+        if (updateTaskDto.assigned_to_user_id !== undefined) {
+        await this.validateAssignee(projectId, updateTaskDto.assigned_to_user_id);
+
+        fields.push(`assigned_to_user_id = $${index++}`);
+        values.push(updateTaskDto.assigned_to_user_id);
+        }
+
+        if (fields.length === 0) {
+        return existing.rows[0];
+        }
+
+        values.push(taskId);
+        values.push(projectId);
+
+        const result = await this.databaseService.getPool().query(
+        `
+        UPDATE tasks
+        SET ${fields.join(', ')}
+        WHERE task_id = $${index}
+            AND project_id = $${index + 1}
+        RETURNING *
+        `,
+        values,
+        );
+
+        return result.rows[0];
         
     }
 
