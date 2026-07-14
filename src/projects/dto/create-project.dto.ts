@@ -14,7 +14,7 @@ export class CreateProjectDto {
   @IsString()
   description?: string;
 
-  // Keep only if your service still references it
+  
   @IsOptional()
   @IsString()
   project_description?: string;

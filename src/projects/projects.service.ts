@@ -21,8 +21,9 @@ export class ProjectsService {
       `SELECT 1 FROM projects WHERE owner_user_id = $1 AND project_name = $2`,
       [user.user_id, projectName],
     );
+    
 
-    if (existing.rowCount && existing.rowCount > 0) {
+    if ( existing.rowCount > 0) {
       throw new ConflictException('You already own a project with this name');
     }
 
@@ -61,6 +62,7 @@ export class ProjectsService {
   }
 
   async getProjectById(projectId: number, user: { user_id: number }) {
+    //check for membership in the project (if the project exists, but user is not a member then throw project not found error)
     const membership = await this.databaseService.getPool().query(
       `SELECT 1 FROM projects_members WHERE project_id = $1 AND user_id = $2`,
       [projectId, user.user_id],

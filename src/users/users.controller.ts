@@ -12,7 +12,7 @@ export class UsersController{
         private authService : AuthService
     ){}
 
-    @Post('register')
+    @Post()
     async register(@Body() body: RegisterUserDto) {
         const hash = await bcrypt.hash(body.password, 10);
         body.password = hash;
