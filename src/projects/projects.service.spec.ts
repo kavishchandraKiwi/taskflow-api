@@ -5,6 +5,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectsService } from './projects.service';
 import {Test, TestingModule} from '@nestjs/testing';
+import { mock } from 'node:test';
 
 describe('ProjectsService', () => {
   let projectsService: ProjectsService;
@@ -126,8 +127,97 @@ describe('ProjectsService', () => {
     });
   })
 
-  describe('updateProject',async() => {
-    const user = {user_id: 1};
+  describe('updateProject',() => {
+    it('should update the project successfully happy path', async() => {
+      const user = {user_id: 1};
+      const project_id = 10;
+      const updateProjectDto: UpdateProjectDto = {
+        project_name: 'Updated Project',
+        description: 'Updated Description',
+        deadline: '2026-12-31',
+      }
+      mockQuery.mockResolvedValueOnce({rowCount : 1, rows: [
+        {
+          owner_user_id : 1,
+        }
+      ]})
+      mockQuery.mockResolvedValueOnce({rowCount: 1, rows : [
+        {
+          project_id: 10,
+          project_name: 'Updated Project',
+          description: 'Updated Description',
+          deadline: '2026-12-31',
+          owner_user_id: 1,
+        }
+
+      ]})
+      const result = await projectsService.updateProject(project_id,updateProjectDto, user);
+      expect(result).toEqual({
+        project_id: 10,
+        project_name: 'Updated Project',
+        description: 'Updated Description',
+        deadline: '2026-12-31',
+        owner_user_id: 1,
+      });
+      expect(mockQuery).toHaveBeenCalledTimes(2);
+
+
+    })
+    it('should throw NotFoundException if project DNE or user is not a member', async () => {
+
+      mockQuery.mockResolvedValueOnce({rowCount: 0,rows: []});
+
+      await expect(
+        projectsService.updateProject(10, {project_name: 'Updated',},{user_id: 1,},
+        ),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(mockQuery).toHaveBeenCalledTimes(1);
+    });
+    it('should throw ForbiddenException if user is not project owner', async () => {
+
+      mockQuery.mockResolvedValueOnce({rowCount: 1,rows: [
+          {
+            owner_user_id: 20,},
+        ],
+      });
+
+      await expect(
+        projectsService.updateProject(
+          10,
+          {project_name: 'Updated',},
+          {user_id: 1},
+        ),
+      ).rejects.toThrow(ForbiddenException);
+
+      expect(mockQuery).toHaveBeenCalledTimes(1);
+    });
+    it('should return the current project only if the updateProjectDto body is empty ', async() => {
+      const project_id = 100;
+      const user = {user_id : 10};
+      const currentProject = {
+        project_id: 10,
+        project_name: 'current project',
+        description: 'this is a project that is existing currently',
+        deadline: '2026-12-31',
+        owner_user_id: 1,
+      }
+
+      const updateProjectDto: UpdateProjectDto = {};
+
+      mockQuery.mockResolvedValueOnce({rowCount: 1, rows: [
+        {owner_user_id: 1}
+      ]});
+      
+
+
+      
+      
+
+
+    })
+    
+
     
 
   })

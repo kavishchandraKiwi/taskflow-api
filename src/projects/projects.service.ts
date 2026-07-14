@@ -85,16 +85,20 @@ export class ProjectsService {
   }
 
   async updateProject(projectId: number, updateProjectDto: UpdateProjectDto, user: { user_id: number }) {
-    const project = await this.databaseService.getPool().query(
-      `SELECT owner_user_id FROM projects WHERE project_id = $1`,
-      [projectId],
+    const membership = await this.databaseService.getPool().query(
+      `SELECT p.owner_user_id FROM projects AS p
+        JOIN projects_members AS pm 
+        ON pm.project_id = p.project_id
+        WHERE p.project_id = $1 AND pm.user_id = $2
+      `,
+      [projectId, user.user_id],
     );
 
-    if (!project.rowCount) {
+    if (!membership.rowCount) {
       throw new NotFoundException('Project not found');
     }
 
-    if (project.rows[0].owner_user_id !== user.user_id) {
+    if (membership.rows[0].owner_user_id !== user.user_id) {
       throw new ForbiddenException('Only the project owner can update this project');
     }
 

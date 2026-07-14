@@ -11,11 +11,11 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request & { user?: any }>();
     const authHeader = request.headers.authorization;
     const publicEndpoints = [
-      {method: 'POST', path : 'users/register'},
+      {method: 'POST', path : 'users'},
       {method: 'POST', path: 'users/login'}
     ];
     const isAuthRoute =  [
-      '/users/register','/users/login','/auth/*'
+      '/users','/users/login','/auth/*'
     ].some(p => request.originalUrl.startsWith(p));
 
     if (isAuthRoute) {
