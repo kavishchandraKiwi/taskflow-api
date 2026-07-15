@@ -193,8 +193,8 @@ describe('ProjectsService', () => {
       expect(mockQuery).toHaveBeenCalledTimes(1);
     });
     it('should return the current project only if the updateProjectDto body is empty ', async() => {
-      const project_id = 100;
-      const user = {user_id : 10};
+      const project_id = 10;
+      const user = {user_id : 1};
       const currentProject = {
         project_id: 10,
         project_name: 'current project',
@@ -206,20 +206,66 @@ describe('ProjectsService', () => {
       const updateProjectDto: UpdateProjectDto = {};
 
       mockQuery.mockResolvedValueOnce({rowCount: 1, rows: [
-        {owner_user_id: 1}
-      ]});
-      
+        {owner_user_id: 1}]
+      });
 
+      jest.spyOn(projectsService, 'getProjectById').mockResolvedValueOnce(currentProject);
 
-      
-      
+      const result = await projectsService.updateProject(10, {}, user);
 
+      expect(result).toEqual(currentProject );
 
+      expect(projectsService.getProjectById).toHaveBeenNthCalledWith(
+        1,
+        10, {user_id:1});
     })
-    
-
-    
-
   })
+  describe('addMemberToProject', () => {
+  it('should add a member to the project', async () => {
+    mockQuery.mockResolvedValueOnce({ rowCount: 1, rows: [{ owner_user_id: 1 }]}) 
+      .mockResolvedValueOnce({rowCount: 1, rows: [{ user_id: 2 }]}) 
+      .mockResolvedValueOnce({ rowCount: 0, rows: []}) 
+      .mockResolvedValueOnce({}); 
+
+    const result = await projectsService.addMemberToProject(10,'member@test.com',{ user_id: 1 },);
+
+    expect(result).toEqual({ message: 'Member added'});
+
+    expect(mockQuery).toHaveBeenCalledTimes(4);
+  });
+  it('ForbiddenException if requester is not the owner', async () => {
+    mockQuery.mockResolvedValueOnce({rowCount: 1,rows: [{ owner_user_id: 9089 }]});
+
+    await expect(projectsService.addMemberToProject(10, 'member@test.com', {
+      user_id: 1,
+      })).rejects.toThrow(ForbiddenException);
+
+    expect(mockQuery).toHaveBeenCalledTimes(1);
+  });
+  it('ConflictException if user is already a member', async () => {
+    mockQuery
+      .mockResolvedValueOnce({rowCount: 1,rows: [{ owner_user_id: 1 }]})
+      .mockResolvedValueOnce({rowCount: 1,rows: [{ user_id: 2 }]})
+      .mockResolvedValueOnce({rowCount: 1,rows: [{}]});
+
+    await expect(projectsService.addMemberToProject(10, 'member@test.com', {user_id: 1
+      })).rejects.toThrow(ConflictException);
+
+    expect(mockQuery).toHaveBeenCalledTimes(3);
+  });
+
+
+  it('should throw NotFoundException if target user does not exist', async () => {
+    mockQuery
+      .mockResolvedValueOnce({rowCount: 1,  rows: [{ owner_user_id: 1 }]})
+      .mockResolvedValueOnce({rowCount: 0,  rows: []});
+
+    await expect(projectsService.addMemberToProject(10, 'member@test.com', 
+      {user_id: 1})).rejects.toThrow(NotFoundException);
+
+    expect(mockQuery).toHaveBeenCalledTimes(2);
+  });
+
+});
 
 })

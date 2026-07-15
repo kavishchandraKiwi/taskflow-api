@@ -20,7 +20,7 @@ describe('Projects (e2e)', () => {
     const memberEmail = `member-${suffix}@example.com`;
 
     await request(app.getHttpServer())
-    .post('/users/register')
+    .post('/users')
     .send({
         email: ownerEmail,
         username: 'owner',
@@ -29,7 +29,7 @@ describe('Projects (e2e)', () => {
     .expect(201);
 
     await request(app.getHttpServer())
-      .post('/users/register')
+      .post('/users')
       .send({
         email: memberEmail,
         username: 'member',
